@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: challenge-api
+  namespace: stone
+  labels:
+    app: challenge-api
+spec:
+  selector:
+    app: challenge-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: challenge-api
+  namespace: stone
+  labels:
+    app: challenge-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: challenge-api
+  template:
+    metadata:
+      labels:
+        app: challenge-api
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+                - arm64
+      containers:
+      - name: challenge-api
+        image: 273539623895.dkr.ecr.us-east-1.amazonaws.com/challenge-api:latest
+        ports:
+        - containerPort: 8080
